@@ -48,6 +48,12 @@ variable "queue_message_retention_period" {
   default     = 345600
 }
 
+variable "queue_maximum_message_size" {
+  description = "SQS maximum message size in bytes"
+  type        = number
+  default     = 262144
+}
+
 variable "enable_s3_versioning" {
   description = "Enable S3 bucket versioning"
   type        = bool
