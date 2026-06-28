@@ -1,6 +1,5 @@
 # Review Analysis Cloud Microservices - Test Containers and Localstack in practice
 
-[![E2E tests - Release Process](https://github.com/teixeira-fernando/Review-Analysis-Cloud-Microservices/actions/workflows/e2e-tests-release.yml/badge.svg)](https://github.com/teixeira-fernando/Review-Analysis-Cloud-Microservices/actions/workflows/e2e-tests-release.yml)
 ![Coverage](https://img.shields.io/codecov/c/github/teixeira-fernando/Review-Analysis-Cloud-Microservices)
 
 ## Table of Contents
@@ -15,7 +14,6 @@
 - [QA Strategy](#qa-strategy)
 - [Pipeline Configuration](#pipeline-configuration)
 - [Development Info](#development-info)
-  - [Running E2E tests using Docker alone](#running-e2e-tests-using-docker-alone)
 
 ## Microservices 
 
@@ -58,7 +56,7 @@ There are different options to run the project. The frontend module is included 
 #### 1 - Docker - using Localstack
 
 
-You can simply run this docker-compose command to run the backend services, the frontend module, E2E tests, and Localstack:
+You can simply run this docker-compose command to run the backend services, the frontend module, and Localstack:
 
 ```Shell
 docker compose up
@@ -79,7 +77,7 @@ export AWS_SECRETKEY=YOUR_SECRETKEY_HERE
 ```
 
 
-Now, we can run this single docker command to run the backend services, the frontend module, and the E2E tests using real AWS services from your account.
+Now, we can run this single docker command to run the backend services and the frontend module using real AWS services from your account.
 
 ```Shell
 docker compose -f docker-compose-real-AWS-services.yml up
@@ -134,17 +132,11 @@ You can also run the project using your favorite IDE. As mentioned, you just nee
 ./gradlew :review-analyzer:bootRun
 ```
 
- <b>Run E2E tests:</b>
-
-```Gradle
-./gradlew :e2e-tests:test
-```
-
 ## QA Strategy
 
 * Unit Tests: <b>Junit5 and Mockito</b>
 * Integration tests: <b>Spring Boot Test, TestContainers, Localstack</b>
-* E2E tests:  <b>Playwright, Rest Assured, Localstack</b>
+* E2E tests:  <b>Playwright, Testcontainers, Localstack</b>
 * Quality Metrics:
     * Mutation Tests/Mutation Coverage: <b>PITest</b> (TODO)
   * Code Coverage: <b>JaCoCo</b> reports for backend services in pull request pipelines (XML + HTML artifacts)
@@ -195,10 +187,6 @@ Even though this project is using a single repository, it is still a microservic
   * Generates JaCoCo coverage report and uploads it as workflow artifact (`review-collector-coverage-report`).
 * **frontend-review-pull-request**
   * Builds and runs the unit, integration and e2e tests for the `frontend-review` frontend.
-* **e2e-tests-pull-request**
-  * Runs the E2E tests using the `docker-compose.yml` configuration.
-  * Builds Docker images for both services and the E2E tests, running them with the latest changes from the PR.
-  * Uses LocalStack to simulate AWS services, avoiding extra costs.
 
 ### Release Pipelines
 
@@ -210,13 +198,6 @@ After changes are merged into the main branch, the following pipelines are used:
   * Builds the Docker image for the `review-collector` service and pushes it to the Docker registry.
 * **frontend-review-release**
   * Builds the Docker image for the `frontend-review` frontend and pushes it to the Docker registry.
-* **e2e-tests-release**
-  * Runs the E2E tests using the `docker-compose-real-AWS-services.yml` configuration.
-  * Uses the latest Docker images for both services and the E2E tests built in the release pipelines.
-  * Utilizes real AWS services for test execution, requiring `AWS_ACCESSKEY` and `AWS_SECRETKEY`.
-
-Note: While it would be more efficient to run the `docker-compose.yml` configuration during the release process, this project demonstrates different possibilities with LocalStack and real AWS services.
-
 ## Development info
 
 
@@ -231,11 +212,4 @@ npm run dev
 ```
 
 Then visit [http://localhost:3000](http://localhost:3000).
-
-### Running E2E tests using Docker alone
-
-From root folder, run the following commands:
-"docker build -t my-e2e-tests . -f Dockerfile_e2e_tests"
-
-"docker run --rm -it -e REVIEW_COLLECTOR_BASE_URL=$REVIEW_COLLECTOR_BASE_URL -e REVIEW_ANALYZER_BASE_URL=$REVIEW_ANALYZER_BASE_URL -v /var/run/docker.sock:/var/run/docker.sock my-e2e-tests"
 
