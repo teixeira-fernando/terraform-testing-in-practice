@@ -17,7 +17,6 @@ queue_name  = "review-analysis-queue"
 # Queue configuration
 queue_visibility_timeout       = 30
 queue_message_retention_period = 345600 # 4 days
-queue_maximum_message_size     = 262144 # 256 KiB
 
 # S3 configuration
 enable_s3_versioning = false
