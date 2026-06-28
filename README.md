@@ -187,6 +187,10 @@ Even though this project is using a single repository, it is still a microservic
   * Generates JaCoCo coverage report and uploads it as workflow artifact (`review-collector-coverage-report`).
 * **frontend-review-pull-request**
   * Builds and runs the unit, integration and e2e tests for the `frontend-review` frontend.
+* **terraform-pull-request**
+  * Validates Terraform code formatting and syntax.
+  * Runs `terraform plan` with LocalStack configuration to preview infrastructure changes.
+  * Uploads the plan artifact for review and audit trails.
 
 ### Release Pipelines
 
