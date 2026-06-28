@@ -1,0 +1,10 @@
+docker stop /ministack
+docker rm /ministack
+docker stop /ministack-redis
+docker rm /ministack-redis
+docker stop /frontend-review
+docker rm /frontend-review
+docker stop /review-analyzer
+docker rm /review-analyzer
+docker stop /review-collector
+docker rm /review-collector
