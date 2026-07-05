@@ -22,14 +22,12 @@ jobs:
         run: |
           cd terraform
           terraform fmt -check -recursive
-        continue-on-error: false
 
       - name: Terraform Validate
         run: |
           cd terraform
           terraform init -backend=false
           terraform validate
-        continue-on-error: false
 
   plan:
     name: Plan with LocalStack Config

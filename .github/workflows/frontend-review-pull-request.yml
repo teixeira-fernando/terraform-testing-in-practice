@@ -32,7 +32,7 @@ jobs:
       - name: Test - e2e tests
         run: |
           cd frontend-review
-          npm run test:e2e 
+          npm run test:e2e:all-logs
       - name: Build Docker image
         run: |
           cd frontend-review
