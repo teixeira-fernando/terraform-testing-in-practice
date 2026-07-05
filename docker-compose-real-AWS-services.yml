@@ -1,6 +1,3 @@
-
-version: '3'
-
 services:
   review-collector:
     image: teixeirafernando/review-collector:latest

@@ -7,7 +7,6 @@ services:
     networks:
       - ls
 
-
   review-collector:
     image: teixeirafernando/review-collector:latest
     container_name: review-collector
