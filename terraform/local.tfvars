@@ -1,7 +1,7 @@
 # LocalStack Development Environment Configuration
 # Use this with: terraform apply -var-file=local.tfvars
 
-aws_region   = "eu-central-1"
+aws_region = "eu-central-1"
 # Use localhost when running Terraform from your host machine.
 # If Terraform runs inside a container on the same Docker network, use http://localstack:4566.
 aws_endpoint = "http://localhost:4566"
