@@ -38,6 +38,8 @@ jobs:
           install-awslocal: 'false'
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+      - name: Connect LocalStack to Docker network
+        run: docker network connect ls-network localstack
       - name: Terraform Init
         run: |
           cd terraform
