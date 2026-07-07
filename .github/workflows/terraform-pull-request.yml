@@ -1,0 +1,61 @@
+name: Terraform - Pull Request
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-pull-request.yml"
+
+jobs:
+  validate:
+    name: Format & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Terraform Format Check
+        run: |
+          cd terraform
+          terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          cd terraform
+          terraform init -backend=false
+          terraform validate
+
+  plan:
+    name: Plan with LocalStack Config
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init -backend=false
+
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform plan -var-file=local.tfvars -out=tfplan
+        env:
+          TF_LOG: INFO
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.run_number }}
+          path: terraform/tfplan
+          retention-days: 5

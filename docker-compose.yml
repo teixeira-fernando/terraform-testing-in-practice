@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   localstack: # LocalStack container
     image: localstack/localstack:4.10.0
@@ -8,11 +6,14 @@ services:
       - "127.0.0.1:4566:4566"
       # Now only required if you need to access LocalStack from the host
       - "127.0.0.1:4510-4559:4510-4559"
-    volumes:
-      - ./localstack-setup.sh:/etc/localstack/init/ready.d/script.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
     networks:
       - ls
-
 
   review-collector:
     image: teixeirafernando/review-collector:latest
@@ -20,7 +21,8 @@ services:
     environment:
       AWS_ENDPOINT: http://localstack:4566
     depends_on:
-      - localstack
+      localstack:
+        condition: service_healthy
     ports:
       - "8080:8080"
     networks:
@@ -32,7 +34,8 @@ services:
     environment:
       AWS_ENDPOINT: http://localstack:4566
     depends_on:
-      - localstack
+      localstack:
+        condition: service_healthy
     ports:
       - "8081:8081"
     networks:
@@ -46,22 +49,6 @@ services:
       - "3000:80"
     networks:
       - ls
-
-  e2e-tests:
-    image: teixeirafernando/review-analysis-e2e-tests:latest
-    environment:
-      - REVIEW_COLLECTOR_BASE_URL=review-collector
-      - REVIEW_ANALYZER_BASE_URL=review-analyzer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - review-collector
-      - review-analyzer
-      - frontend-review
-      - localstack
-    networks:
-      - ls
-    entrypoint: [ "sh", "-c", "while ! nc -z review-collector 8080; do sleep 1; done; while ! nc -z review-analyzer 8081; do sleep 1; done; ./gradlew :e2e-tests:test --tests '*ReviewAnalysisE2ETest'" ]
 
 networks:
   ls:

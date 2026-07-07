@@ -1,6 +1,5 @@
 # Review Analysis Cloud Microservices - Test Containers and Localstack in practice
 
-[![E2E tests - Release Process](https://github.com/teixeira-fernando/Review-Analysis-Cloud-Microservices/actions/workflows/e2e-tests-release.yml/badge.svg)](https://github.com/teixeira-fernando/Review-Analysis-Cloud-Microservices/actions/workflows/e2e-tests-release.yml)
 ![Coverage](https://img.shields.io/codecov/c/github/teixeira-fernando/Review-Analysis-Cloud-Microservices)
 
 ## Table of Contents
@@ -10,11 +9,11 @@
 - [Instructions to run the project](#instructions-to-run-the-project)
   - [Docker - using Localstack](#1---docker---using-localstack)
   - [Docker - using real AWS services](#2---docker---using-real-aws-services)
-  - [Using your favorite IDE](#3---using-your-favorite-ide)
+  - [Infrastructure as Code with Terraform](#3---infrastructure-as-code-with-terraform)
+  - [Using your favorite IDE](#4---using-your-favorite-ide)
 - [QA Strategy](#qa-strategy)
 - [Pipeline Configuration](#pipeline-configuration)
 - [Development Info](#development-info)
-  - [Running E2E tests using Docker alone](#running-e2e-tests-using-docker-alone)
 
 ## Microservices 
 
@@ -31,6 +30,7 @@
 - **Java 21**
 - **Spring Boot**
 - **Gradle**
+- **Terraform** (Infrastructure as Code for AWS)
 - **Test Containers**
 - **Localstack**
 - **JUnit 5**
@@ -44,6 +44,7 @@
 - **Docker**
 - **Node**
 - **Gradle and Java**
+- **Terraform** (optional, for Infrastructure as Code setup)
 - **An AWS account** (if you want to run it using real services; you can use LocalStack which does not require an AWS Account)
 
 
@@ -55,7 +56,7 @@ There are different options to run the project. The frontend module is included 
 #### 1 - Docker - using Localstack
 
 
-You can simply run this docker-compose command to run the backend services, the frontend module, E2E tests, and Localstack:
+You can simply run this docker-compose command to run the backend services, the frontend module, and Localstack:
 
 ```Shell
 docker compose up
@@ -76,7 +77,7 @@ export AWS_SECRETKEY=YOUR_SECRETKEY_HERE
 ```
 
 
-Now, we can run this single docker command to run the backend services, the frontend module, and the E2E tests using real AWS services from your account.
+Now, we can run this single docker command to run the backend services and the frontend module using real AWS services from your account.
 
 ```Shell
 docker compose -f docker-compose-real-AWS-services.yml up
@@ -84,7 +85,40 @@ docker compose -f docker-compose-real-AWS-services.yml up
 
 The frontend will be available at [http://localhost:3000](http://localhost:3000).
 
-#### 3 - Using your favorite IDE
+#### 3 - Infrastructure as Code with Terraform
+
+This project includes Terraform configuration to manage AWS resources (S3 bucket and SQS queue) as Infrastructure as Code. Terraform supports both LocalStack (development) and real AWS (production).
+
+**Prerequisites:** [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+
+**Quick Start with LocalStack:**
+
+```Shell
+# Initialize Terraform (first time only)
+cd terraform
+terraform init
+
+# Plan and apply with LocalStack configuration
+terraform plan -var-file=local.tfvars
+terraform apply -var-file=local.tfvars
+
+# Start the services (in another terminal, from project root)
+docker compose up
+```
+
+**For Production AWS:**
+
+```Shell
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+
+cd terraform
+terraform apply -var-file=prod.tfvars
+```
+
+📖 **For comprehensive Terraform documentation**, see [TERRAFORM.md](TERRAFORM.md).
+
+#### 4 - Using your favorite IDE
 
 You can also run the project using your favorite IDE. As mentioned, you just need the Java JDK and Gradle properly installed and configured on your machine. Let me show you how to easily run the 2 services from the project in that way.
 
@@ -98,17 +132,11 @@ You can also run the project using your favorite IDE. As mentioned, you just nee
 ./gradlew :review-analyzer:bootRun
 ```
 
- <b>Run E2E tests:</b>
-
-```Gradle
-./gradlew :e2e-tests:test
-```
-
 ## QA Strategy
 
 * Unit Tests: <b>Junit5 and Mockito</b>
 * Integration tests: <b>Spring Boot Test, TestContainers, Localstack</b>
-* E2E tests:  <b>Playwright, Rest Assured, Localstack</b>
+* E2E tests:  <b>Playwright, Testcontainers, Localstack</b>
 * Quality Metrics:
     * Mutation Tests/Mutation Coverage: <b>PITest</b> (TODO)
   * Code Coverage: <b>JaCoCo</b> reports for backend services in pull request pipelines (XML + HTML artifacts)
@@ -159,10 +187,10 @@ Even though this project is using a single repository, it is still a microservic
   * Generates JaCoCo coverage report and uploads it as workflow artifact (`review-collector-coverage-report`).
 * **frontend-review-pull-request**
   * Builds and runs the unit, integration and e2e tests for the `frontend-review` frontend.
-* **e2e-tests-pull-request**
-  * Runs the E2E tests using the `docker-compose.yml` configuration.
-  * Builds Docker images for both services and the E2E tests, running them with the latest changes from the PR.
-  * Uses LocalStack to simulate AWS services, avoiding extra costs.
+* **terraform-pull-request**
+  * Validates Terraform code formatting and syntax.
+  * Runs `terraform plan` with LocalStack configuration to preview infrastructure changes.
+  * Uploads the plan artifact for review and audit trails.
 
 ### Release Pipelines
 
@@ -174,13 +202,6 @@ After changes are merged into the main branch, the following pipelines are used:
   * Builds the Docker image for the `review-collector` service and pushes it to the Docker registry.
 * **frontend-review-release**
   * Builds the Docker image for the `frontend-review` frontend and pushes it to the Docker registry.
-* **e2e-tests-release**
-  * Runs the E2E tests using the `docker-compose-real-AWS-services.yml` configuration.
-  * Uses the latest Docker images for both services and the E2E tests built in the release pipelines.
-  * Utilizes real AWS services for test execution, requiring `AWS_ACCESSKEY` and `AWS_SECRETKEY`.
-
-Note: While it would be more efficient to run the `docker-compose.yml` configuration during the release process, this project demonstrates different possibilities with LocalStack and real AWS services.
-
 ## Development info
 
 
@@ -195,11 +216,4 @@ npm run dev
 ```
 
 Then visit [http://localhost:3000](http://localhost:3000).
-
-### Running E2E tests using Docker alone
-
-From root folder, run the following commands:
-"docker build -t my-e2e-tests . -f Dockerfile_e2e_tests"
-
-"docker run --rm -it -e REVIEW_COLLECTOR_BASE_URL=$REVIEW_COLLECTOR_BASE_URL -e REVIEW_ANALYZER_BASE_URL=$REVIEW_ANALYZER_BASE_URL -v /var/run/docker.sock:/var/run/docker.sock my-e2e-tests"
 
