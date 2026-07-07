@@ -29,6 +29,20 @@ jobs:
           npm test
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+      - name: Create Docker network
+        run: docker network create ls-network
+      - name: Start LocalStack
+        run: docker run -d --name localstack --network ls-network -p 4566:4566 localstack/localstack:4.10.0
+      - name: Wait for LocalStack
+        run: until docker logs localstack 2>&1 | grep -q "Ready."; do sleep 2; done
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -var-file=local.tfvars -auto-approve
       - name: Test - e2e tests
         run: |
           cd frontend-review

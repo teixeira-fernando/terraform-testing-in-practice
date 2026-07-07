@@ -1,0 +1,32 @@
+services:
+  review-collector:
+    image: teixeirafernando/review-collector:latest
+    container_name: review-collector
+    environment:
+      AWS_ENDPOINT: http://localstack:4566
+    ports:
+      - "8080:8080"
+    networks:
+      - ls-network
+
+  review-analyzer:
+    image: teixeirafernando/review-analyzer:latest
+    container_name: review-analyzer
+    environment:
+      AWS_ENDPOINT: http://localstack:4566
+    ports:
+      - "8081:8081"
+    networks:
+      - ls-network
+
+  frontend-review:
+    image: teixeirafernando/frontend-review:latest
+    container_name: frontend-review
+    ports:
+      - "3000:80"
+    networks:
+      - ls-network
+
+networks:
+  ls-network:
+    external: true
