@@ -36,6 +36,8 @@ jobs:
         with:
           image-tag: '4.0.3'
           install-awslocal: 'false'
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
       - name: Terraform Init
         run: |
           cd terraform
