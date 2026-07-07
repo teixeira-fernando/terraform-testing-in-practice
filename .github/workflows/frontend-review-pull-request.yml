@@ -35,7 +35,7 @@ jobs:
         uses: LocalStack/setup-localstack@v0.2.2
         with:
           image-tag: '4.0.3'
-          install-awslocal: 'true'
+          install-awslocal: 'false'
       - name: Terraform Init
         run: |
           cd terraform
