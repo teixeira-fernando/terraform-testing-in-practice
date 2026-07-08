@@ -27,27 +27,22 @@ jobs:
         run: |
           cd frontend-review
           npm test
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
       - name: Create Docker network
         run: docker network create ls-network
-      - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.2.2
-        with:
-          image-tag: '4.0.3'
-          install-awslocal: 'false'
-        env:
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
-      - name: Connect LocalStack to Docker network
-        run: docker network connect ls-network localstack
-      - name: Terraform Init
+      - name: Start LocalStack with Terraform Init Hooks
         run: |
-          cd terraform
-          terraform init
-      - name: Terraform Apply
+          docker run -d \
+            --name localstack \
+            --network ls-network \
+            -p 4566:4566 \
+            -e LOCALSTACK_AUTH_TOKEN=${{ secrets.LOCALSTACK_AUTH_TOKEN }} \
+            -e EXTENSION_AUTO_INSTALL=localstack-extension-terraform-init \
+            -v $(pwd)/terraform:/etc/localstack/init/ready.d \
+            localstack/localstack-pro:4.10.0
+      - name: Wait for LocalStack and init hooks
         run: |
-          cd terraform
-          terraform apply -var-file=local.tfvars -auto-approve
+          until docker logs localstack 2>&1 | grep -q "Ready."; do sleep 2; done
+          echo "LocalStack with Terraform init hooks is ready"
       - name: Test - e2e tests
         run: |
           cd frontend-review
