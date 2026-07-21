@@ -1,6 +1,4 @@
-# Review Analysis Cloud Microservices - Test Containers and Localstack in practice
-
-![Coverage](https://img.shields.io/codecov/c/github/teixeira-fernando/Review-Analysis-Cloud-Microservices)
+# Terraform Testing in Practice - E2E Testing with Testcontainers and LocalStack
 
 ## Table of Contents
 - [Microservices](#microservices)
@@ -10,40 +8,35 @@
   - [Docker - using Localstack](#1---docker---using-localstack)
   - [Docker - using real AWS services](#2---docker---using-real-aws-services)
   - [Infrastructure as Code with Terraform](#3---infrastructure-as-code-with-terraform)
-  - [Using your favorite IDE](#4---using-your-favorite-ide)
 - [QA Strategy](#qa-strategy)
 - [Pipeline Configuration](#pipeline-configuration)
 - [Development Info](#development-info)
 
-## Microservices 
+## Microservices
 
+This repository focuses on the **E2E testing and infrastructure** side of the Review Analysis project: Terraform IaC, Docker Compose orchestration, and Testcontainers/Playwright-driven end-to-end tests. The backend microservices themselves are built and released from a separate repository; here they are only consumed as prebuilt Docker images.
 
-- **Review Collector**
-- **Review Analyzer**
-- **Frontend Review** (React + Vite): A web interface for submitting product reviews, connected to the backend microservices.
+- **Review Collector** (`teixeirafernando/review-collector`) — external image, source maintained in its own repository.
+- **Review Analyzer** (`teixeirafernando/review-analyzer`) — external image, source maintained in its own repository.
+- **Frontend Review** (React + Vite, built in [frontend-review/](frontend-review)): the web interface for submitting product reviews, and the home of this repo's Playwright E2E test suite.
 
 ![Review Analysis Microservices Flow](images/ReviewAnalysisProject.drawio.png)
 
 ## Stack
 
-
-- **Java 21**
-- **Spring Boot**
-- **Gradle**
 - **Terraform** (Infrastructure as Code for AWS)
 - **Test Containers**
 - **Localstack**
-- **JUnit 5**
 - **AWS (S3, SQS)**
 - **React** (Frontend)
 - **Vite** (Frontend tooling)
 - **Nginx** (Frontend container)
+- **Playwright** (E2E testing)
 
 ## Requirements to run it locally
 
 - **Docker**
 - **Node**
-- **Gradle and Java**
 - **Terraform** (optional, for Infrastructure as Code setup)
 - **An AWS account** (if you want to run it using real services; you can use LocalStack which does not require an AWS Account)
 
@@ -118,31 +111,13 @@ terraform apply -var-file=prod.tfvars
 
 📖 **For comprehensive Terraform documentation**, see [TERRAFORM.md](TERRAFORM.md).
 
-#### 4 - Using your favorite IDE
-
-You can also run the project using your favorite IDE. As mentioned, you just need the Java JDK and Gradle properly installed and configured on your machine. Let me show you how to easily run the 2 services from the project in that way.
-
- <b>Run review-collector service:</b>
-```Gradle
-./gradlew :review-collector:bootRun
-```
-
- <b>Run review-analyzer service:</b>
-```Gradle
-./gradlew :review-analyzer:bootRun
-```
-
 ## QA Strategy
 
-* Unit Tests: <b>Junit5 and Mockito</b>
-* Integration tests: <b>Spring Boot Test, TestContainers, Localstack</b>
-* E2E tests:  <b>Playwright, Testcontainers, Localstack</b>
-* Quality Metrics:
-    * Mutation Tests/Mutation Coverage: <b>PITest</b> (TODO)
-  * Code Coverage: <b>JaCoCo</b> reports for backend services in pull request pipelines (XML + HTML artifacts)
-    * Technical Debt, Code Smells and other complementary metrics : <b>Sonar Cloud</b>
-* Contract tests: <b>Pact framework</b> (TODO)
-* Continuous Integration: This project uses Github Action for Continuous Integration, where it executes all the tests and Sonar Cloud Analysis for every pull request, making easier the process of integration of every new code, also facilitating the process of Code Review.
+* E2E tests: <b>Playwright, Testcontainers, Localstack</b> — the primary quality gate owned by this repository, exercising the full review submission and analysis flow against ephemeral, production-like infrastructure.
+* Unit/component tests for the frontend: <b>Jest, Testing Library</b> (`frontend-review`).
+* Infrastructure validation: <b>Terraform fmt/validate/plan</b> against LocalStack configuration.
+* The backend microservices (`review-collector`, `review-analyzer`) have their own unit/integration test suites and CI pipelines in their own repository; this repo consumes their published images as-is.
+* Continuous Integration: This project uses GitHub Actions to run frontend unit/E2E tests and Terraform validation on every pull request to `main`.
 
 ## Testcontainers and LocalStack together in action
 
@@ -175,33 +150,20 @@ npm run test:e2e:all-logs
 
 ## Pipeline Configuration
 
-Even though this project is using a single repository, it is still a microservices project. The CI/CD process is organized to make each service modular and independent. Below is an overview of the pipelines created for every pull request to the main branch:
+This repository's CI/CD is scoped to the frontend/E2E and infrastructure it owns. Below is an overview of the pipelines that run for every pull request to the main branch:
 
 ### Pull Request Pipelines
 
-* **review-analyzer-pull-request**
-  * Builds and runs the unit and integration tests for the `review-analyzer` service.
-  * Generates JaCoCo coverage report and uploads it as workflow artifact (`review-analyzer-coverage-report`).
-* **review-collector-pull-request**
-  * Builds and runs the unit and integration tests for the `review-collector` service.
-  * Generates JaCoCo coverage report and uploads it as workflow artifact (`review-collector-coverage-report`).
 * **frontend-review-pull-request**
-  * Builds and runs the unit, integration and e2e tests for the `frontend-review` frontend.
+  * Builds and runs the unit and e2e tests for the `frontend-review` frontend.
+  * Builds the `frontend-review` Docker image.
 * **terraform-pull-request**
   * Validates Terraform code formatting and syntax.
   * Runs `terraform plan` with LocalStack configuration to preview infrastructure changes.
   * Uploads the plan artifact for review and audit trails.
 
-### Release Pipelines
+The `review-collector` and `review-analyzer` backend services are built, tested, and released from their own repository; this repo only pulls their published Docker images.
 
-After changes are merged into the main branch, the following pipelines are used:
-
-* **review-analyzer-release**
-  * Builds the Docker image for the `review-analyzer` service and pushes it to the Docker registry.
-* **review-collector-release**
-  * Builds the Docker image for the `review-collector` service and pushes it to the Docker registry.
-* **frontend-review-release**
-  * Builds the Docker image for the `frontend-review` frontend and pushes it to the Docker registry.
 ## Development info
 
 

@@ -310,7 +310,7 @@ The application reads S3 and SQS configuration from environment variables or `ap
 - `spring.cloud.aws.s3.endpoint` — S3 endpoint (LocalStack: `http://localstack:4566`)
 - `spring.cloud.aws.sqs.endpoint` — SQS endpoint (LocalStack: `http://localstack:4566`)
 
-After running Terraform, verify bucket and queue names match your `application.properties` files in `review-analyzer` and `review-collector`.
+After running Terraform, verify the bucket and queue names match the configuration expected by the deployed `review-analyzer` and `review-collector` service images (their `app.bucket`/`app.queue` settings — sources for these services live in their own repository, not here).
 
 ## Next Steps
 
