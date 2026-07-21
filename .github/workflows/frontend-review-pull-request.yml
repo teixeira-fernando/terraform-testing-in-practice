@@ -27,22 +27,6 @@ jobs:
         run: |
           cd frontend-review
           npm test
-      - name: Create Docker network
-        run: docker network create ls-network
-      - name: Start LocalStack with Terraform Init Hooks
-        run: |
-          docker run -d \
-            --name localstack \
-            --network ls-network \
-            -p 4566:4566 \
-            -e LOCALSTACK_AUTH_TOKEN=${{ secrets.LOCALSTACK_AUTH_TOKEN }} \
-            -e EXTENSION_AUTO_INSTALL=localstack-extension-terraform-init \
-            -v $(pwd)/terraform:/etc/localstack/init/ready.d \
-            localstack/localstack-pro:4.10.0
-      - name: Wait for LocalStack and init hooks
-        run: |
-          until docker logs localstack 2>&1 | grep -q "Ready."; do sleep 2; done
-          echo "LocalStack with Terraform init hooks is ready"
       - name: Test - e2e tests
         run: |
           cd frontend-review

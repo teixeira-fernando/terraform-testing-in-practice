@@ -1,32 +1,62 @@
 services:
+  localstack:
+    image: localstack/localstack:4.10.0
+    container_name: localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  terraform-apply:
+    image: hashicorp/terraform:1.15.6
+    container_name: terraform-apply
+    working_dir: /workspace
+    volumes:
+      - ../terraform:/workspace
+    depends_on:
+      localstack:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        terraform init -input=false &&
+        terraform apply -input=false -auto-approve
+        -var-file=local.tfvars
+        -var aws_endpoint=http://localstack:4566
+
   review-collector:
     image: teixeirafernando/review-collector:latest
     container_name: review-collector
     environment:
       AWS_ENDPOINT: http://localstack:4566
+    depends_on:
+      terraform-apply:
+        condition: service_completed_successfully
     ports:
       - "8080:8080"
-    networks:
-      - ls-network
 
   review-analyzer:
     image: teixeirafernando/review-analyzer:latest
     container_name: review-analyzer
     environment:
       AWS_ENDPOINT: http://localstack:4566
+    depends_on:
+      terraform-apply:
+        condition: service_completed_successfully
     ports:
       - "8081:8081"
-    networks:
-      - ls-network
 
   frontend-review:
     image: teixeirafernando/frontend-review:latest
     container_name: frontend-review
+    depends_on:
+      - review-collector
+      - review-analyzer
     ports:
       - "3000:80"
-    networks:
-      - ls-network
 
-networks:
-  ls-network:
-    external: true
