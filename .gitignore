@@ -36,6 +36,11 @@ out/
 ### VS Code ###
 .vscode/
 
+### Environment files (may contain secrets/tokens) ###
+.env
+.env.local
+.env.*.local
+
 ### UI Frontend ###
 frontend-review/node_modules/
 frontend-review/dist/
@@ -48,6 +53,10 @@ terraform/.terraform.lock.hcl
 terraform/terraform.tfstate
 terraform/terraform.tfstate.*
 terraform/*.tfstate
+terraform/localstack_providers_override.tf
+
+### LocalStack volume cache ###
+volume/
 terraform/*.tfstate.*
 terraform/crash.log
 terraform/crash.*.log
