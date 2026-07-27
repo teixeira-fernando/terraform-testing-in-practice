@@ -2,16 +2,7 @@ services:
   localstack: # LocalStack container
     image: localstack/localstack:4.10.0
     ports:
-      # Now only required if you need to access LocalStack from the host
-      - "127.0.0.1:4566:4566"
-      # Now only required if you need to access LocalStack from the host
-      - "127.0.0.1:4510-4559:4510-4559"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 15s
+      - "4566:4566"
     networks:
       - ls
 
