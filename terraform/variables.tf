@@ -54,6 +54,12 @@ variable "queue_maximum_message_size" {
   default     = 262144
 }
 
+variable "queue_max_receive_count" {
+  description = "Number of times a message can be received before being sent to the dead letter queue"
+  type        = number
+  default     = 3
+}
+
 variable "enable_s3_versioning" {
   description = "Enable S3 bucket versioning"
   type        = bool
