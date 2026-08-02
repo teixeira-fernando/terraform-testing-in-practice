@@ -27,13 +27,13 @@ variable "aws_endpoint" {
 variable "bucket_name" {
   description = "S3 bucket name for review analysis"
   type        = string
-  default     = "review-analysis-bucket"
+  default     = "review-analysis-bucket-local"
 }
 
 variable "queue_name" {
   description = "SQS queue name for review analysis"
   type        = string
-  default     = "review-analysis-queue"
+  default     = "review-analysis-queue-local"
 }
 
 variable "queue_visibility_timeout" {

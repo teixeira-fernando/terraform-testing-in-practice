@@ -11,8 +11,8 @@ aws_access_key = "test"
 aws_secret_key = "test"
 
 # Resource names
-bucket_name = "review-analysis-bucket"
-queue_name  = "review-analysis-queue"
+bucket_name = "review-analysis-bucket-local"
+queue_name  = "review-analysis-queue-local"
 
 # Queue configuration
 queue_visibility_timeout       = 30
