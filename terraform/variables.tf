@@ -27,13 +27,13 @@ variable "aws_endpoint" {
 variable "bucket_name" {
   description = "S3 bucket name for review analysis"
   type        = string
-  default     = "review-analysis-bucket"
+  default     = "review-analysis-bucket-local"
 }
 
 variable "queue_name" {
   description = "SQS queue name for review analysis"
   type        = string
-  default     = "review-analysis-queue"
+  default     = "review-analysis-queue-local"
 }
 
 variable "queue_visibility_timeout" {
@@ -52,6 +52,12 @@ variable "queue_maximum_message_size" {
   description = "SQS maximum message size in bytes"
   type        = number
   default     = 262144
+}
+
+variable "queue_max_receive_count" {
+  description = "Number of times a message can be received before being sent to the dead letter queue"
+  type        = number
+  default     = 3
 }
 
 variable "enable_s3_versioning" {

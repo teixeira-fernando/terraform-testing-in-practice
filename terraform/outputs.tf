@@ -22,3 +22,18 @@ output "sqs_queue_arn" {
   description = "ARN of the SQS queue"
   value       = aws_sqs_queue.review_analysis_queue.arn
 }
+
+output "sqs_dlq_name" {
+  description = "Name of the SQS dead letter queue"
+  value       = aws_sqs_queue.review_analysis_dlq.name
+}
+
+output "sqs_dlq_url" {
+  description = "URL of the SQS dead letter queue"
+  value       = aws_sqs_queue.review_analysis_dlq.url
+}
+
+output "sqs_dlq_arn" {
+  description = "ARN of the SQS dead letter queue"
+  value       = aws_sqs_queue.review_analysis_dlq.arn
+}
